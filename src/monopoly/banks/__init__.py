@@ -12,13 +12,16 @@ from .citibank import Citibank
 from .dbs import Dbs
 from .detector import BankDetector
 from .hsbc import Hsbc
+from .lbp import LaBanquePostale
 from .maybank import Maybank
+from .nickel import Nickel
 from .ocbc import Ocbc
 from .rbc import RoyalBankOfCanada
 from .schwab_bank import Schwab
 from .scotiabank import Scotiabank
 from .standard_chartered import StandardChartered
 from .td_canada_trust import TDCanadaTrust
+from .trade_republic import TradeRepublic
 from .trust import Trust
 from .uob import Uob
 from .usbank import UsBank
@@ -35,13 +38,16 @@ banks: list[type[BankBase]] = [
     Citibank,
     Dbs,
     Hsbc,
+    LaBanquePostale,
     Maybank,
+    Nickel,
     Ocbc,
     RoyalBankOfCanada,
     Schwab,
     Scotiabank,
     StandardChartered,
     TDCanadaTrust,
+    TradeRepublic,
     Trust,
     Uob,
     UsBank,

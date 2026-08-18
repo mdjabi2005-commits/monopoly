@@ -85,16 +85,37 @@ class Transaction:
         """
         Replace commas, whitespaces, apostrophes and parentheses for string representation of floats.
 
+        Handles both Anglo-Saxon (1,234.00) and European/French (1 234,00 or 1.234,00) formats.
         1'234.00 -> 1234.00
         1,234.00 -> 1234.00
+        -4,64 -> -4.64
         (-10.00) -> -10.00
         (-1.56 ) -> -1.56.
         """
         if value is None:
             return "0"
-        if isinstance(value, str):
-            return re.sub(r"[^\d\.\-]", "", value)
-        return str(value)
+        if not isinstance(value, str):
+            return str(value)
+
+        val = value.strip().replace("\xa0", "").replace("\u202f", "").replace(" ", "").replace("'", "")
+        is_negative = val.startswith("-") or (val.startswith("(") and val.endswith(")"))
+
+        # Determine decimal separator
+        if "," in val and "." in val:
+            if val.rfind(",") > val.rfind("."):
+                # 1.234,56 -> 1234.56
+                val = val.replace(".", "").replace(",", ".")
+            else:
+                # 1,234.56 -> 1234.56
+                val = val.replace(",", "")
+        elif "," in val:
+            # 1234,56 or 4,64 -> 1234.56
+            val = val.replace(",", ".")
+
+        cleaned = re.sub(r"[^\d\.\-]", "", val)
+        if is_negative and not cleaned.startswith("-"):
+            cleaned = "-" + cleaned
+        return cleaned if cleaned not in ("", "-") else "0"
 
     # pylint: disable=bad-classmethod-argument
     @model_validator(mode="before")

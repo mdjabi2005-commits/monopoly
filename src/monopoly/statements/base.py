@@ -145,6 +145,7 @@ class BaseStatement:
         self.pages = pages
         self.header = header
         self.file_path = file_path
+        self.previous_transaction_date = None
 
     @cached_property
     def pattern(self):
@@ -185,6 +186,9 @@ class BaseStatement:
                     multiline_config=self.config.multiline_config,
                 )
                 processed_match = self.process_match(raw_transaction, context)
+                if not processed_match.transaction_date:
+                    continue
+
                 transaction = Transaction(
                     **processed_match.as_dict(),
                     auto_polarity=self.config.transaction_auto_polarity,
@@ -227,7 +231,34 @@ class BaseStatement:
         if config.multiline_descriptions:
             match.description = DescriptionBuilder(context, self.pattern).build()
 
+        if config.multiline_transaction_date and not match.transaction_date:
+            match.transaction_date = self.get_multiline_transaction_date(context)
+
         return match
+
+    def get_multiline_transaction_date(self, ctx: MatchContext) -> str | None:
+        """Find transaction date from preceding lines and optional succeeding year lines."""
+        date_pattern = re.compile(r"^\s*(\d{1,2}\s+[a-zA-Zà-ÿ.]+)")
+        year_pattern = re.compile(r"^\s*(20\d{2})\b")
+
+        date_part = None
+        for i in range(ctx.idx - 1, max(-1, ctx.idx - 5), -1):
+            line = ctx.lines[i]
+            if dm := date_pattern.match(line):
+                date_part = dm.group(1).strip()
+                break
+
+        if not date_part:
+            return None
+
+        year = ""
+        for j in range(ctx.idx + 1, min(len(ctx.lines), ctx.idx + 5)):
+            line = ctx.lines[j]
+            if ym := year_pattern.match(line):
+                year = ym.group(1).strip()
+                break
+
+        return f"{date_part} {year}".strip() if year else date_part
 
     def get_multiline_polarity(self, ctx: MatchContext):
         """

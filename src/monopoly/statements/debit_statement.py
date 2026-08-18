@@ -55,27 +55,33 @@ class DebitStatement(BaseStatement):
         if raw_transaction.match is None:
             msg = "RawTransaction.match is required for polarity detection"
             raise ValueError(msg)
-        amount = raw_transaction.amount
-        line = raw_transaction.match.string
-        start_pos = line.find(amount)
-        # assume that numbers are right aligned
-        end_pos = start_pos + len(amount) - 1
+
+        try:
+            end_pos = raw_transaction.match.span("amount")[1] - 1
+        except (IndexError, KeyError):
+            amount = raw_transaction.amount
+            line = raw_transaction.match.string
+            start_pos = line.find(amount)
+            end_pos = start_pos + len(amount) - 1
+
         withdrawal_diff = abs(end_pos - withdrawal_pos)
         deposit_diff = abs(end_pos - deposit_pos)
         return "CR" if withdrawal_diff > deposit_diff else "DR"
 
     def get_withdrawal_pos(self, page_number: int) -> int | None:
-        common_names = ["withdraw", "debit", r"from\ your\ account"]
+        common_names = ["withdraw", "debit", "débit", "sortie", r"from\ your\ account"]
         for name in common_names:
-            if pos := self.get_column_pos(name, page_number=page_number):
+            pos = self.get_column_pos(name, page_number=page_number)
+            if pos is not None and pos != -1:
                 return pos
         logger.debug("%s column not found in header on page %s", common_names, page_number)
         return False
 
     def get_deposit_pos(self, page_number: int) -> int | None:
-        common_names = ["deposit", "credit", r"to\ your\ account"]
+        common_names = ["deposit", "credit", "crédit", "entrée", "entree", r"to\ your\ account"]
         for name in common_names:
-            if pos := self.get_column_pos(name, page_number=page_number):
+            pos = self.get_column_pos(name, page_number=page_number)
+            if pos is not None and pos != -1:
                 return pos
         logger.debug("%s column not found in header on page %s", common_names, page_number)
         return False
@@ -85,10 +91,15 @@ class DebitStatement(BaseStatement):
         if cache_key in self._column_pos_cache:
             return self._column_pos_cache[cache_key]
 
-        pattern = re.compile(rf"{column_type}[\w()$]*", re.IGNORECASE)
-        result = None
-        if match := pattern.search(self.header):
-            result = self.get_header_pos(match.group(), page_number)
+        result = self.get_header_pos(column_type, page_number)
+
+        # Fallback: if header not found on this page, look on earlier pages
+        if (result is None or result == -1) and page_number > 0:
+            for p in range(page_number):
+                pos = self.get_column_pos(column_type, p)
+                if pos and pos != -1:
+                    result = pos
+                    break
 
         self._column_pos_cache[cache_key] = result
         return result
@@ -100,23 +111,25 @@ class DebitStatement(BaseStatement):
         An assumption is made here that numbers are right aligned, meaning
         that if an amount matches with the end of the withdrawal string position,
         the item is in fact a withdrawal
-
-        e.g.
-        ```
-        DATE         DESCRIPTION          WITHDRAWAL         DEPOSIT
-        15 OCT       bill payment             322.07
-        16 OCT       item                                     123.12
-        ```
         """
-        header_pattern = self.config.header_pattern
+        pattern = re.compile(rf"{column_name}", re.IGNORECASE)
         lines = self.pages[page_number].lines
+
+        # If TRANSACTIONS section header exists, start looking strictly after it
+        start_idx = 0
+        for idx, line in enumerate(lines):
+            if line.strip().upper() == "TRANSACTIONS":
+                start_idx = idx
+                break
+
+        for line in lines[start_idx:]:
+            if match := pattern.search(line):
+                return match.start() + len(match.group())
+
+        # Fallback: search whole page
         for line in lines:
-            if match := header_pattern.search(line):
-                header = match.string.lower()
-                header_start_pos = header.find(column_name.lower())
-                if header_start_pos == -1:
-                    continue
-                return header_start_pos + len(column_name)
+            if match := pattern.search(line):
+                return match.start() + len(match.group())
 
         logger.debug("Debit header %s cannot be found on page %s", column_name, page_number)
         return -1
