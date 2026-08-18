@@ -22,13 +22,17 @@ Supported banks:
 | Citibank                               | ✅                 | ❌                   |
 | DBS/POSB                               | ✅                 | ✅                   |
 | HSBC                                   | ✅                 | ❌                   |
+| La Banque Postale                      | N/A                | ✅                   |
 | Maybank                                | ✅                 | ✅                   |
+| Nickel                                 | N/A                | ✅                   |
 | OCBC                                   | ✅                 | ✅                   |
 | Royal Bank of Canada (RBC)             | ✅                 | ✅                   |
 | Schwab Bank                            | N/A                | ✅                   |
 | Scotiabank                             | ✅                 | ✅                   |
 | Standard Chartered                     | ✅                 | ❌                   |
+| Sumeria (Lydia)                        | N/A                | ✅                   |
 | TD Canada Trust                        | ✅                 | ✅                   |
+| Trade Republic                         | N/A                | ✅                   |
 | Trust                                  | ✅                 | ❌                   |
 | UOB                                    | ✅                 | ✅                   |
 | US Bank                                | ✅                 | ❌                   |
