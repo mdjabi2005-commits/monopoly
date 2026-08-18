@@ -73,3 +73,22 @@ Cette décision repose sur les validations réelles obtenues sur le corpus banca
 - **La Banque Postale** (13 fichiers, 361 transactions) : 100% validé.
 - **Trade Republic** (2 fichiers, 274 transactions) : 100% validé avec extraction des doubles IBANs.
 - **Sumeria** (1 fichier, 8 transactions) : 100% validé avec extraction des UUIDs externes.
+
+---
+
+## 6. Vision Produit & Boucle d'Apprentissage Communautaire
+
+Ce workflow transforme une contrainte technique en un avantage concurrentiel majeur pour Gestio :
+
+### A. Valorisation et Empowerment de l'Utilisateur
+Dans les applications traditionnelles (Bankin, Linxo, YNAB), une banque non supportée bloque l'utilisateur avec un message passif d'attente. Dans Gestio :
+- L'utilisateur dépose un relevé de sa banque non encore répertoriée.
+- L'assistant **Hermès Bank** analyse la structure du document en direct et propose le nouveau parseur.
+- L'utilisateur valide le solde certifié : **son import débloque instantanément le support de sa banque pour l'ensemble de la communauté.**
+- L'utilisateur passe du statut de simple consommateur à celui de **contributeur actif et valorisé**.
+
+### B. Effet de Réseau et Souveraineté des Données
+1. **Zéro Web Scraping** : Aucune transmission d'identifiants secrets bancaires à un tiers.
+2. **Exécution 100% Locale** : Le parsing et la réconciliation tournent en local sur Raspberry Pi / machine hôte.
+3. **Croissance Organique du Catalogue** : Chaque nouveau profil ou banque importé enrichit le moteur Monopoly pour toujours sans coût de développement récurrent.
+
