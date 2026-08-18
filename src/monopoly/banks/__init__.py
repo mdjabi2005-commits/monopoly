@@ -19,6 +19,7 @@ from .ocbc import Ocbc
 from .rbc import RoyalBankOfCanada
 from .schwab_bank import Schwab
 from .scotiabank import Scotiabank
+from .sumeria import Sumeria
 from .standard_chartered import StandardChartered
 from .td_canada_trust import TDCanadaTrust
 from .trade_republic import TradeRepublic
@@ -46,6 +47,7 @@ banks: list[type[BankBase]] = [
     Schwab,
     Scotiabank,
     StandardChartered,
+    Sumeria,
     TDCanadaTrust,
     TradeRepublic,
     Trust,

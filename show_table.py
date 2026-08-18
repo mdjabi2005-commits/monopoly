@@ -1,8 +1,10 @@
 import glob
+from pathlib import Path
 from monopoly.pdf import PdfDocument, PdfParser
 from monopoly.banks.lbp import LaBanquePostale
 from monopoly.banks.nickel import Nickel
 from monopoly.banks.trade_republic import TradeRepublic
+from monopoly.banks.sumeria import Sumeria
 from monopoly.pipeline import Pipeline
 from tabulate import tabulate
 
@@ -44,3 +46,16 @@ txs = pipeline.transform(statement)
 
 table = [[t.date, f"{t.amount:+.2f} €", f"{t.balance:.2f} €", t.description[:50]] for t in txs[:10]]
 print(tabulate(table, headers=["Date", "Montant", "Solde", "Description"], tablefmt="rounded_outline"))
+
+print("\n" + "=" * 80)
+print("4. SUMERIA (LYDIA) - Relevé de juillet 2026")
+print("=" * 80)
+sumeria_file = Path('/mnt/c/Users/djabi/Documents/relevé pdf/sumeria/bank_statement_19246015.pdf')
+if sumeria_file.exists():
+    doc = PdfDocument(file_path=sumeria_file)
+    parser = PdfParser(Sumeria, doc)
+    pipeline = Pipeline(parser)
+    statement = pipeline.extract(safety_check=False)
+    txs = pipeline.transform(statement)
+    table = [[t.date, f"{t.amount:+.2f} €", t.description[:50]] for t in txs]
+    print(tabulate(table, headers=["Date", "Montant", "Description"], tablefmt="rounded_outline"))
